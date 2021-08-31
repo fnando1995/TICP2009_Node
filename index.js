@@ -20,16 +20,23 @@ function helpCrypto(userId){
   io.to(userId).emit("chat to crypto","Ejemplo --btc 0.001 --eth. Esta opción muestra el cambio de 0.001 unidades de Bitcoin (btc) y Ethereum (eth).");
   
 }
+function notFound(userId){
+  io.to(userId).emit("chat to crypto","Ese(os) argumento(s) no fue(ron) encontrado(s). Usa --help para más ayuda.");
+}
 
+function showCryptos(userId){
+  io.to(userId).emit("chat to crypto"," ---- Lista de Monedas Válidas ----");
+  io.to(userId).emit("chat to crypto","btc | bitcoin");
 
-
-
+}
 
 
 
 function solveOption1(userId,init){
   if (init=='help'){
     helpCrypto(userId);
+  }else if(init=='show'){
+    showCryptos(userId);
   }else{
     io.to(userId).emit("chat to crypto",init);
   }
@@ -38,13 +45,12 @@ function solveOption2(userId,init,cantidad){
   io.to(userId).emit("chat to crypto",init+"_"+cantidad);
 }
 
-function solveOption3(userId,init,cantidad,end){
-  io.to(userId).emit("chat to crypto",init+"_"+cantidad+"_"+end);
+function solveOption3(userId,init,end){
+  io.to(userId).emit("chat to crypto",init+"_"+end);
 }
-function  solveErrorRegex(userId,texto){
-  texto = texto.replace("-crypto- ","")
-  io.to(userId).emit("chat to crypto","No se entiende argumentos: "+texto);
-  io.to(userId).emit("chat to crypto","Envia --help para mostrar opciones...");
+
+function solveOption4(userId,init,cantidad,end){
+  io.to(userId).emit("chat to crypto",init+"_"+cantidad+"_"+end);
 }
 
 
@@ -58,22 +64,24 @@ function solveCryptoQuestion(msg){
       if (array[0].startsWith("--")){
           solveOption1(userId,array[0].replace("--",""));
       }else{
-        solveErrorRegex(userId,texto);
+        notFound(userId)
       }
   }else if (tamano==2){
       if (array[0].startsWith("--") && !isNaN(parseFloat(array[1]))){
           solveOption2(userId,array[0].replace("--",""),array[1])
+      }else if (array[0].startsWith("--") && array[1].startsWith("--")){
+          solveOption3(userId,array[0].replace("--",""),array[1].replace("--",""))
       }else{
-        solveErrorRegex(userId,texto);
+        notFound(userId)
       }
   }else if(tamano==3){
       if (array[0].startsWith("--") && !isNaN(parseFloat(array[1])) && array[2].startsWith("--")){
-        solveOption3(userId,array[0].replace("--",""),array[1],array[2].replace("--",""))
+        solveOption4(userId,array[0].replace("--",""),array[1],array[2].replace("--",""))
       }else{
-        solveErrorRegex(userId,texto);
+        notFound(userId)
       }
   }else{
-    solveErrorRegex(userId,texto);
+    notFound(userId)
   }
 
 
