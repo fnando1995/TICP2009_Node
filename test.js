@@ -1,27 +1,33 @@
-let texto="-crypto- --btc".toLowerCase();;
-console.log(texto);
-let array = texto.split(" ").slice(1);
-let tamano = array.length;
-if(tamano==1){ 
-    if (array[0].startsWith("--")){
-        let init=array[0].replace("--","");
-        console.log("opcion1",texto);
-    }
-}else if (tamano==2){
-    if (array[0].startsWith("--") && !isNaN(parseFloat(array[1]))){
-        let init=array[0].replace("--","");
-        let cantidad=array[1];
-    }
-}else if(tamano==3){
-    if (array[0].startsWith("--") && !isNaN(parseFloat(array[1])) && array[2].startsWith("--")){
-        let init=array[0].replace("--","");
-        let cantidad=array[1];
-        let end=array[2].replace("--","");
-    }
-}else{
-  console.log(otros);
-}
+const request = require('request');
+const app = require('express')();
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
+const port = process.env.PORT || 3000;
 
 
-// console.log();
+let dict_coins = {}
+request('https://api.coingecko.com/api/v3/coins/list',{ json: true }, (err, res, body)=> {
+  if (err) { return console.log(err); }
+  body.forEach(element => {
+    dict_coins[element.symbol]={"id":element.id,"name":element.name}
+  });
+  console.log("Lista de Monedas cargadas")
+});
 
+
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/index.html');
+});
+
+io.on('connection', (socket) => {
+  socket.on('chat to all', msg => {
+    io.emit('chat to all', msg);
+  });
+  socket.on('chat to crypto', msg => {
+    console.log(dict_coins['eth'])
+  });
+});
+
+http.listen(port, () => {
+  console.log(`Socket.IO server running at http://localhost:${port}/`);
+});
